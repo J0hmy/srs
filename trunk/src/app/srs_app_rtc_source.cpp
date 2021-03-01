@@ -775,6 +775,10 @@ void SrsRtcFromRtmpBridger::on_unpublish()
 {
     // Reset the metadata cache, to make VLC happy when disable/enable stream.
     // @see https://github.com/ossrs/srs/issues/1630#issuecomment-597979448
+    if (!meta) {
+      // TODO: FIX in ffmpeg publish stop by ctrl-c
+      return;
+    }
     meta->update_previous_vsh();
     meta->update_previous_ash();
 
