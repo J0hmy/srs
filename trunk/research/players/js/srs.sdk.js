@@ -56,6 +56,7 @@ function SrsRtcPublisherAsync() {
         self.pc.addTransceiver("video", {direction: "sendonly"});
 
         var stream = await navigator.mediaDevices.getUserMedia(self.constraints);
+        self.stream2 = stream
 
         // @see https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream#Migrating_to_addTrack
         stream.getTracks().forEach(function (track) {
@@ -70,14 +71,20 @@ function SrsRtcPublisherAsync() {
         var session = await new Promise(function (resolve, reject) {
             // @see https://github.com/rtcdn/rtcdn-draft
             var data = {
-                api: conf.apiUrl, tid: conf.tid, streamurl: conf.streamUrl,
-                clientip: null, sdp: offer.sdp
+                api: conf.apiUrl, 
+                tid: conf.tid, 
+                streamurl: conf.streamUrl,
+                clientip: null, 
+                sdp: offer.sdp
             };
             console.log("Generated offer: ", data);
 
             $.ajax({
-                type: "POST", url: conf.apiUrl, data: JSON.stringify(data),
-                contentType: 'application/json', dataType: 'json'
+                type: "POST", 
+                url: conf.apiUrl, 
+                data: JSON.stringify(data),
+                contentType: 'application/json', 
+                dataType: 'json'
             }).done(function (data) {
                 console.log("Got answer: ", data);
                 if (data.code) {
@@ -102,6 +109,10 @@ function SrsRtcPublisherAsync() {
     self.close = function () {
         self.pc && self.pc.close();
         self.pc = null;
+        if (self.stream2) {
+            self.stream2.getTracks().forEach(track => track.stop());
+            self.stream2 = null;
+        }
     };
 
     // The callback when got local stream.
@@ -299,8 +310,12 @@ function SrsRtcPlayerAsync() {
         var session = await new Promise(function(resolve, reject) {
             // @see https://github.com/rtcdn/rtcdn-draft
             var data = {
-                api: conf.apiUrl, tid: conf.tid, streamurl: conf.streamUrl,
-                clientip: null, sdp: offer.sdp
+                api: conf.apiUrl, 
+                tid: conf.tid, 
+                streamurl: 
+                conf.streamUrl,
+                clientip: null, 
+                sdp: offer.sdp
             };
             console.log("Generated offer: ", data);
 
@@ -502,6 +517,9 @@ function SrsRtcFormatSenders(senders, kind) {
     senders.forEach(function (sender) {
         var params = sender.getParameters();
         params && params.codecs && params.codecs.forEach(function(c) {
+            if (sender.track === null) {
+                return;
+            }
             if (kind && sender.track.kind !== kind) {
                 return;
             }
@@ -521,7 +539,9 @@ function SrsRtcFormatSenders(senders, kind) {
 
             codecs.push(s);
         });
+        console.log('sender', params)
     });
+    console.log('codecs', codecs.join(", "))
     return codecs.join(", ");
 }
 
