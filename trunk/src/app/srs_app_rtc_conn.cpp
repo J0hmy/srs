@@ -2746,7 +2746,7 @@ srs_error_t SrsRtcConnection::negotiate_publish_capability(SrsRtcUserConfig* ruc
     bool nack_enabled = _srs_config->get_rtc_nack_enabled(req->vhost);
     bool twcc_enabled = _srs_config->get_rtc_twcc_enabled(req->vhost);
     // TODO: FIME: Should check packetization-mode=1 also.
-    bool has_42e01f = srs_sdp_has_h264_profile(remote_sdp, "42e01f");
+    bool has_42e01f = srs_sdp_has_h264_profile(remote_sdp, "42001f");
 
     for (int i = 0; i < (int)remote_sdp.media_descs_.size(); ++i) {
         const SrsMediaDesc& remote_media_desc = remote_sdp.media_descs_.at(i);
@@ -2864,7 +2864,7 @@ srs_error_t SrsRtcConnection::negotiate_publish_capability(SrsRtcUserConfig* ruc
                 }
 
                 // If not exists 42e01f, we pick up any profile such as 42001f.
-                bool profile_matched = (!has_42e01f || h264_param.profile_level_id == "42e01f");
+                bool profile_matched = (!has_42e01f || h264_param.profile_level_id == "42001f");
 
                 // Try to pick the "best match" H.264 payload type.
                 if (profile_matched && h264_param.packetization_mode == "1" && h264_param.level_asymmerty_allow == "1") {
@@ -3079,7 +3079,7 @@ srs_error_t SrsRtcConnection::negotiate_play_capability(SrsRtcUserConfig* ruc, s
     bool nack_enabled = _srs_config->get_rtc_nack_enabled(req->vhost);
     bool twcc_enabled = _srs_config->get_rtc_twcc_enabled(req->vhost);
     // TODO: FIME: Should check packetization-mode=1 also.
-    bool has_42e01f = srs_sdp_has_h264_profile(remote_sdp, "42e01f");
+    bool has_42e01f = srs_sdp_has_h264_profile(remote_sdp, "42001f");
 
     SrsRtcSource* source = NULL;
     if ((err = _srs_rtc_sources->fetch_or_create(req, &source)) != srs_success) {
@@ -3133,7 +3133,7 @@ srs_error_t SrsRtcConnection::negotiate_play_capability(SrsRtcUserConfig* ruc, s
 
                 // If exists 42e01f profile, choose it; otherwise, use the first payload.
                 // TODO: FIME: Should check packetization-mode=1 also.
-                if (!has_42e01f || srs_sdp_has_h264_profile(payload, "42e01f")) {
+                if (!has_42e01f || srs_sdp_has_h264_profile(payload, "42001f")) {
                     remote_payload = payload;
                     break;
                 }
