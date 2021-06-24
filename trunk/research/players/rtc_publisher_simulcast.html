@@ -26,8 +26,8 @@
                 <ul class="nav">
                     <li><a id="nav_srs_player" href="srs_player.html">SRS播放器</a></li>
                     <li><a id="nav_rtc_player" href="rtc_player.html">RTC播放器</a></li>
-                    <li class="active"><a id="nav_rtc_publisher" href="rtc_publisher.html">RTC推流</a></li>
-                    <li><a id="nav_rtc_publisher_simulcast" href="rtc_publisher_simulcast.html">Simulcast推流</a></li>
+                    <li><a id="nav_rtc_publisher" href="rtc_publisher.html">RTC推流</a></li>
+                    <li class="active"><a id="nav_rtc_publisher_simulcast" href="rtc_publisher_simulcast.html">Simulcast推流</a></li>
                     <li><a  href="http://ossrs.net/srs.release/releases/app.html">iOS/Andriod</a></li>
                     <!--<li><a id="nav_srs_publisher" href="srs_publisher.html">SRS编码器</a></li>-->
                     <!--<li><a id="nav_srs_chat" href="srs_chat.html">SRS会议</a></li>-->
@@ -99,7 +99,6 @@ $(function(){
 
         // User should set the stream when publish is done, @see https://webrtc.org/getting-started/media-devices
         // However SRS SDK provides a consist API like https://webrtc.org/getting-started/remote-streams
-        $('#rtc_media_player').prop('srcObject', sdk.stream);
         // Optional callback, SDK will add track to stream.
         // sdk.ontrack = function (event) { console.log('Got track', event); sdk.stream.addTrack(event.track); };
 
@@ -114,6 +113,7 @@ $(function(){
         // For example: webrtc://r.ossrs.net/live/livestream
         var url = $("#txt_url").val();
         sdk.publish(url).then(function(session){
+            $('#rtc_media_player').prop('srcObject', sdk.stream);
             $('#sessionid').html(session.sessionid);
             $('#simulator-drop').attr('href', session.simulator + '?drop=1&username=' + session.sessionid);
         }).catch(function (reason) {
