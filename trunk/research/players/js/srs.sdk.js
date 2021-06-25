@@ -50,17 +50,33 @@ function SrsRtcPublisherAsync() {
             self.constraints.video = {  
                 wіdth: 1280, height: 720
             }
+            UpdateNativeCreateOffer(numberOfSimulcastLayers);
+            console.log('kSimulcastApiVersionLegacy')
+        } else if (parameter === 'spec3') {
+            self.constraints.video = {
+                wіdth: 1280, height: 720
+            }
+            console.log('kSimulcastApiVersionSpecCompliant')
         }
-        UpdateNativeCreateOffer(numberOfSimulcastLayers);
-        self.pc.addTransceiver("audio", {direction: "sendonly"});
-        self.pc.addTransceiver("video", {direction: "sendonly"});
 
         var stream = await navigator.mediaDevices.getUserMedia(self.constraints);
         self.stream2 = stream
 
         // @see https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream#Migrating_to_addTrack
         stream.getTracks().forEach(function (track) {
-            self.pc.addTrack(track);
+            if (track.kind === 'video' && parameter === 'spec3') {
+                self.pc.addTransceiver(track, {
+                    active: true,
+                    direction: "sendonly",
+                    sendEncodings: [
+                        {rid: "high", active: true},
+                        {rid: "mid", active: true, scaleResolutionDownBy: 2},
+                        {rid: "low", active: true, scaleResolutionDownBy: 4},
+                    ]
+                })
+            } else {
+                self.pc.addTrack(track, stream);
+            }
 
             // Notify about local track when stream is ok.
             self.ontrack && self.ontrack({track: track});

@@ -111,6 +111,8 @@ $(function(){
         };
 
         // For example: webrtc://r.ossrs.net/live/livestream
+        // fake
+        $("#txt_url").val('webrtc://127.0.0.1/live/livestream?numberOfSimulcastLayers=spec3');
         var url = $("#txt_url").val();
         sdk.publish(url).then(function(session){
             $('#rtc_media_player').prop('srcObject', sdk.stream);
