@@ -395,6 +395,7 @@ srs_error_t SrsRtpExtensions::decode_0xbede(SrsBuffer* buf)
         uint8_t id = (v & 0xF0) >> 4;
         uint8_t len = (v & 0x0F) + 1;
 
+        // srs_warn("=========== ext id=%d", (int)id);
         SrsRtpExtensionType xtype = types_? types_->get_type(id) : kRtpExtensionNone;
         if (xtype == kRtpExtensionTransportSequenceNumber) {
             if (decode_twcc_extension_) {

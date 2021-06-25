@@ -407,6 +407,12 @@ srs_error_t SrsGoApiRtcPublish::do_serve_http(ISrsHttpResponseWriter* w, ISrsHtt
         return srs_error_wrap(err, "create session");
     }
 
+    // todo 优化
+    auto& media_desc = ruc.remote_sdp_.media_descs_.back();
+    if (media_desc.is_video() && media_desc.simulcast_spec_version()) {
+        // local_sdp.media_descs_.back().extmaps_.data = ruc.remote_sdp_.media_descs_.back().extmaps_.data;
+        local_sdp.media_descs_.back().session_info_.simulcast_ = media_desc.session_info_.simulcast_;
+    }
     ostringstream os;
     if ((err = local_sdp.encode(os)) != srs_success) {
         return srs_error_wrap(err, "encode sdp");

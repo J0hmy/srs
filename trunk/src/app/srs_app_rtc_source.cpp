@@ -2146,6 +2146,7 @@ SrsRtcTrackDescription* SrsRtcTrackDescription::copy()
     cp->red_ = red_ ? red_->copy():NULL;
     cp->rtx_ = rtx_ ? rtx_->copy():NULL;
     cp->ulpfec_ = ulpfec_ ? ulpfec_->copy():NULL;
+    cp->rid_ = rid_;
 
     return cp;
 }
