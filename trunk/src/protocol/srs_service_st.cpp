@@ -411,6 +411,7 @@ srs_netfd_t srs_netfd_open(int osfd)
 
 int srs_recvfrom(srs_netfd_t stfd, void *buf, int len, struct sockaddr *from, int *fromlen, srs_utime_t timeout)
 {
+    // todo: SrsUdpMuxListener::cycle(), 阻塞
     return st_recvfrom((st_netfd_t)stfd, buf, len, from, fromlen, (st_utime_t)timeout);
 }
 

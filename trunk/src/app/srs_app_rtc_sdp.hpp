@@ -33,6 +33,7 @@ struct SrsRidInfo {
 
     uint32_t ssrc = 0;
     std::string mid;
+    std::string rtx;
 };
 
 struct SrsSimulcastInfo {

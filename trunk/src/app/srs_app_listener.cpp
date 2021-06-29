@@ -604,6 +604,7 @@ srs_error_t SrsUdpMuxListener::cycle()
 
         nn_loop++;
 
+        // todo: SrsUdpMuxListener::cycle(), 阻塞
         int nread = skt.recvfrom(SRS_UTIME_NO_TIMEOUT);
         if (nread <= 0) {
             if (nread < 0) {
