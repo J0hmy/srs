@@ -2444,8 +2444,8 @@ srs_error_t SrsRtcVideoRecvTrack::check_send_nacks()
         return err;
     }
 
-    srs_trace2(TAG_MAYBE, "RTC: NACK timeout=%u, request PLI, track=%s, ssrc=%u", timeout_nacks,
-        track_desc_->id_.c_str(), track_desc_->ssrc_);
+    srs_trace2(TAG_MAYBE, "RTC: NACK timeout=%u, request PLI, track=%s, ssrc=%u, rid=%s", timeout_nacks,
+        track_desc_->id_.c_str(), track_desc_->ssrc_, track_desc_->rid_.rid.c_str());
 
     return err;
 }

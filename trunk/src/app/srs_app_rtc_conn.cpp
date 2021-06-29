@@ -1158,6 +1158,7 @@ srs_error_t SrsRtcPublishStream::send_rtcp_rr()
 
     for (int i = 0; i < (int)video_tracks_.size(); ++i) {
         SrsRtcVideoRecvTrack* track = video_tracks_.at(i);
+        srs_info("===== ssrc=%u, rid=%s", track->track_desc_->ssrc_, track->track_desc_->rid_.rid.c_str());
         if ((err = track->send_rtcp_rr()) != srs_success) {
             return srs_error_wrap(err, "track=%s", track->get_track_id().c_str());
         }
@@ -1312,6 +1313,7 @@ srs_error_t SrsRtcPublishStream::do_on_rtp_plaintext(SrsRtpPacket*& pkt, SrsBuff
 
     // For source to consume packet.
     uint32_t ssrc = pkt->header.get_ssrc();
+    // srs_warn("===== ssrc=%u", ssrc);
     SrsRtcAudioRecvTrack* audio_track = get_audio_track(ssrc);
     SrsRtcVideoRecvTrack* video_track = get_video_track(ssrc);
     if (audio_track) {
@@ -2764,7 +2766,9 @@ srs_error_t SrsRtcConnection::negotiate_publish_capability(SrsRtcUserConfig* ruc
                     // break;
                 } else if (remote_media_desc.simulcast_spec_version()) {
                     // note: add all ext map in simulcast_spec_version
-                    track_desc->add_rtp_extension_desc(it->first, it->second);
+                    if (it->second == kExtMapFieldArray[kSdesRtpStreamId] || it->second == kExtMapFieldArray[kSdesRepairedRtpStreamId]) {
+                        track_desc->add_rtp_extension_desc(it->first, it->second);
+                    }
                 }
             }
         }
