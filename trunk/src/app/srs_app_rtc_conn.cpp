@@ -2061,11 +2061,13 @@ srs_error_t SrsRtcConnection::dispatch_rtcp(SrsRtcpCommon* rtcp)
 
     // For TWCC packet.
     if (SrsRtcpType_rtpfb == rtcp->type() && 15 == rtcp->get_rc()) {
+        srs_warn("===== %s#%d: dispatch TWCC", __FUNCTION__, __LINE__);
         return on_rtcp_feedback_twcc(rtcp->data(), rtcp->size());
     }
 
     // For REMB packet.
     if (SrsRtcpType_psfb == rtcp->type()) {
+        srs_warn("===== %s#%d: dispatch REMB", __FUNCTION__, __LINE__);
         SrsRtcpPsfbCommon* psfb = dynamic_cast<SrsRtcpPsfbCommon*>(rtcp);
         if (15 == psfb->get_rc()) {
             return on_rtcp_feedback_remb(psfb);
@@ -2822,6 +2824,7 @@ srs_error_t SrsRtcConnection::negotiate_publish_capability(SrsRtcUserConfig* ruc
         track_desc->set_mid(remote_media_desc.mid_);
         // Whether feature enabled in remote extmap.
         int remote_twcc_id = 0;
+        int remote_remb_id = 0;
         if (true) {
             map<int, string> extmaps = remote_media_desc.get_extmaps();
             for(map<int, string>::iterator it = extmaps.begin(); it != extmaps.end(); ++it) {
@@ -2834,11 +2837,17 @@ srs_error_t SrsRtcConnection::negotiate_publish_capability(SrsRtcUserConfig* ruc
                         track_desc->add_rtp_extension_desc(it->first, it->second);
                     }
                 }
+                if (it->second == kExtMapFieldArray[kAbsSendTime]) {
+                    remote_remb_id = it->first;
+                }
             }
         }
 
         if (twcc_enabled && remote_twcc_id) {
             track_desc->add_rtp_extension_desc(remote_twcc_id, kTWCCExt);
+        }
+        if (remote_remb_id > 0) {
+            track_desc->add_rtp_extension_desc(remote_remb_id, kExtMapFieldArray[kAbsSendTime]);
         }
 
         if (remote_media_desc.is_audio()) {
@@ -2866,6 +2875,11 @@ srs_error_t SrsRtcConnection::negotiate_publish_capability(SrsRtcUserConfig* ruc
                     }
                     if (twcc_enabled && remote_twcc_id) {
                         if (rtcp_fb == "transport-cc") {
+                            audio_payload->rtcp_fbs_.push_back(rtcp_fb);
+                        }
+                    }
+                    if (remote_remb_id > 0) {
+                        if (rtcp_fb == "goog-remb") {
                             audio_payload->rtcp_fbs_.push_back(rtcp_fb);
                         }
                     }
@@ -2899,6 +2913,11 @@ srs_error_t SrsRtcConnection::negotiate_publish_capability(SrsRtcUserConfig* ruc
                     }
                     if (twcc_enabled && remote_twcc_id) {
                         if (rtcp_fb == "transport-cc") {
+                            video_payload->rtcp_fbs_.push_back(rtcp_fb);
+                        }
+                    }
+                    if (remote_remb_id > 0) {
+                        if (rtcp_fb == "goog-remb") {
                             video_payload->rtcp_fbs_.push_back(rtcp_fb);
                         }
                     }
@@ -2950,6 +2969,11 @@ srs_error_t SrsRtcConnection::negotiate_publish_capability(SrsRtcUserConfig* ruc
                                 video_payload->rtcp_fbs_.push_back(rtcp_fb);
                             }
                         }
+                        if (remote_remb_id > 0) {
+                            if (rtcp_fb == "goog-remb") {
+                                video_payload->rtcp_fbs_.push_back(rtcp_fb);
+                            }
+                        }
                     }
 
                     track_desc->type_ = "video";
@@ -2980,6 +3004,11 @@ srs_error_t SrsRtcConnection::negotiate_publish_capability(SrsRtcUserConfig* ruc
 
                     if (twcc_enabled && remote_twcc_id) {
                         if (rtcp_fb == "transport-cc") {
+                            video_payload->rtcp_fbs_.push_back(rtcp_fb);
+                        }
+                    }
+                    if (remote_remb_id > 0) {
+                        if (rtcp_fb == "goog-remb") {
                             video_payload->rtcp_fbs_.push_back(rtcp_fb);
                         }
                     }
@@ -3155,11 +3184,17 @@ srs_error_t SrsRtcConnection::negotiate_play_capability(SrsRtcUserConfig* ruc, s
 
         // Whether feature enabled in remote extmap.
         int remote_twcc_id = 0;
+        int remote_remb_id = 0;
         if (true) {
             map<int, string> extmaps = remote_media_desc.get_extmaps();
             for(map<int, string>::iterator it = extmaps.begin(); it != extmaps.end(); ++it) {
                 if (it->second == kTWCCExt) {
                     remote_twcc_id = it->first;
+                }
+                if (it->second == kExtMapFieldArray[kAbsSendTime]) {
+                    remote_remb_id = it->first;
+                }
+                if (remote_twcc_id > 0 && remote_remb_id > 0) {
                     break;
                 }
             }
@@ -3244,6 +3279,12 @@ srs_error_t SrsRtcConnection::negotiate_play_capability(SrsRtcUserConfig* ruc, s
                         track->media_->rtcp_fbs_.push_back(rtcp_fb.at(j));
                     }
                     track->add_rtp_extension_desc(remote_twcc_id, kTWCCExt);
+                }
+                if (remote_remb_id > 0) {
+                    if (rtcp_fb.at(j) == "goog-remb") {
+                        track->media_->rtcp_fbs_.push_back(rtcp_fb.at(j));
+                    }
+                    track->add_rtp_extension_desc(remote_remb_id, kExtMapFieldArray[kAbsSendTime]);
                 }
             }
 
