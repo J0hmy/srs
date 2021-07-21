@@ -2347,6 +2347,19 @@ srs_error_t SrsRtcRecvTrack::send_rtcp_xr_rrtr()
     return err;
 }
 
+srs_error_t SrsRtcRecvTrack::send_rtcp_remb()
+{
+    srs_error_t err = srs_success;
+
+    if (track_desc_->ssrc_ == 0) { return err; }
+
+    if ((err = session_->send_rtcp_remb(track_desc_->ssrc_)) != srs_success) {
+        return srs_error_wrap(err, "ssrc=%u", track_desc_->ssrc_);
+    }
+
+    return err;
+}
+
 bool SrsRtcRecvTrack::set_track_status(bool active)
 {
     bool previous_status = track_desc_->is_active_;

@@ -557,6 +557,7 @@ public:
     void update_send_report_time(const SrsNtp& ntp);
     srs_error_t send_rtcp_rr();
     srs_error_t send_rtcp_xr_rrtr();
+    srs_error_t send_rtcp_remb();
     bool set_track_status(bool active);
     bool get_track_status();
     std::string get_track_id();

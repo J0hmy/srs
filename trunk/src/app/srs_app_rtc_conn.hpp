@@ -344,6 +344,7 @@ public:
 private:
     srs_error_t send_rtcp_rr();
     srs_error_t send_rtcp_xr_rrtr();
+    srs_error_t send_rtcp_remb();
 public:
     srs_error_t on_rtp(char* buf, int nb_buf);
 private:
@@ -528,6 +529,7 @@ public:
     void check_send_nacks(SrsRtpNackForReceiver* nack, uint32_t ssrc, uint32_t& sent_nacks, uint32_t& timeout_nacks);
     srs_error_t send_rtcp_rr(uint32_t ssrc, SrsRtpRingBuffer* rtp_queue, const uint64_t& last_send_systime, const SrsNtp& last_send_ntp);
     srs_error_t send_rtcp_xr_rrtr(uint32_t ssrc);
+    srs_error_t send_rtcp_remb(uint32_t ssrc);
     srs_error_t send_rtcp_fb_pli(uint32_t ssrc, const SrsContextId& cid_of_subscriber);
 public:
     // Simulate the NACK to drop nn packets.

@@ -889,6 +889,10 @@ srs_error_t SrsRtcPublishRtcpTimer::on_timer(srs_utime_t interval)
         srs_freep(err);
     }
 
+    if ((err = p_->send_rtcp_remb()) != srs_success) {
+        srs_warn("REMB err %s", srs_error_desc(err).c_str());
+        srs_freep(err);
+    }
     return err;
 }
 
@@ -1195,6 +1199,19 @@ srs_error_t SrsRtcPublishStream::send_rtcp_xr_rrtr()
     return err;
 }
 
+srs_error_t SrsRtcPublishStream::send_rtcp_remb()
+{
+    srs_error_t err = srs_success;
+
+    for (int i = 0; i < (int)video_tracks_.size(); ++i) {
+        SrsRtcVideoRecvTrack* track = video_tracks_.at(i);
+        if ((err = track->send_rtcp_remb()) != srs_success) {
+            return srs_error_wrap(err, "track=%s", track->get_track_id().c_str());
+        }
+    }
+
+    return err;
+}
 srs_error_t SrsRtcPublishStream::on_twcc(uint16_t sn) {
     srs_error_t err = srs_success;
 
@@ -2472,6 +2489,53 @@ srs_error_t SrsRtcConnection::send_rtcp_xr_rrtr(uint32_t ssrc)
 {
     ++_srs_pps_srtcps->sugar;
 
+    /*
+     @see: http://www.rfc-editor.org/rfc/rfc3611.html#section-2
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |V=2|P|reserved |   PT=XR=207   |             length            |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                              SSRC                             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     :                         report blocks                         :
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+     @see: http://www.rfc-editor.org/rfc/rfc3611.html#section-4.4
+
+      0                   1                   2                   3
+         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |     BT=4      |   reserved    |       block length = 2        |
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |              NTP timestamp, most significant word             |
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |             NTP timestamp, least significant word             |
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    */
+    srs_utime_t now = srs_update_system_time();
+    SrsNtp cur_ntp = SrsNtp::from_time_ms(now / 1000);
+
+    char buf[kRtpPacketSize];
+    SrsBuffer stream(buf, sizeof(buf));
+    stream.write_1bytes(0x80);
+    stream.write_1bytes(kXR);
+    stream.write_2bytes(4);
+    stream.write_4bytes(ssrc);
+    stream.write_1bytes(4);
+    stream.write_1bytes(0);
+    stream.write_2bytes(2);
+    stream.write_4bytes(cur_ntp.ntp_second_);
+    stream.write_4bytes(cur_ntp.ntp_fractions_);
+
+    return send_rtcp(stream.data(), stream.pos());
+}
+
+srs_error_t SrsRtcConnection::send_rtcp_remb(uint32_t ssrc)
+{
+    srs_warn("===== %s#%d: send REMB ssrc=%u", __FUNCTION__, __LINE__, ssrc);
+    return srs_success;
     /*
      @see: http://www.rfc-editor.org/rfc/rfc3611.html#section-2
 
