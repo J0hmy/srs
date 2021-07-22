@@ -2061,8 +2061,8 @@ srs_error_t SrsRtcConnection::dispatch_rtcp(SrsRtcpCommon* rtcp)
 
     // For TWCC packet.
     if (SrsRtcpType_rtpfb == rtcp->type()) {
-        srs_warn("===== %s#%d: dispatch TWCC rc=%d", __FUNCTION__, __LINE__, rtcp->get_rc());
         if (15 == rtcp->get_rc()) {
+            srs_warn("===== %s#%d: dispatch TWCC rc=%d", __FUNCTION__, __LINE__, rtcp->get_rc());
             return on_rtcp_feedback_twcc(rtcp->data(), rtcp->size());
         }
     }
@@ -2150,7 +2150,7 @@ srs_error_t SrsRtcConnection::on_rtcp_feedback_remb(SrsRtcpPsfbCommon *rtcp)
 {
     //ignore REMB
     srs_error_t err = srs_success;
-    srs_warn("===== %s#%d: dispatch REMB rc=%d, ssrc=%u", __FUNCTION__, __LINE__, rtcp->get_rc(), rtcp->get_ssrc());
+    // srs_warn("===== %s#%d: dispatch REMB rc=%d, ssrc=%u", __FUNCTION__, __LINE__, rtcp->get_rc(), rtcp->get_ssrc());
     map<uint32_t, SrsRtcPublishStream*>::iterator it = publishers_ssrc_map_.find(rtcp->get_ssrc());
     if(it == publishers_ssrc_map_.end()) {
         return err;
@@ -2546,7 +2546,7 @@ srs_error_t SrsRtcConnection::send_rtcp_xr_rrtr(uint32_t ssrc)
 
 srs_error_t SrsRtcConnection::send_rtcp_remb(uint32_t ssrc)
 {
-    srs_warn("===== %s#%d: send REMB ssrc=%u", __FUNCTION__, __LINE__, ssrc);
+    // srs_warn("===== %s#%d: send REMB ssrc=%u", __FUNCTION__, __LINE__, ssrc);
     return srs_success;
     /*
      @see: http://www.rfc-editor.org/rfc/rfc3611.html#section-2
