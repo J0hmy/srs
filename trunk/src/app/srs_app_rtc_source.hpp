@@ -536,6 +536,11 @@ public:
         }
         track_desc_->ssrc_ = rid_info.ssrc;
         track_desc_->rid_ = rid_info;
+
+        // TODO: dummy
+        track_desc_->set_fec_ssrc(rid_info.ssrc +1);
+        track_desc_->set_rtx_ssrc(rid_info.ssrc +2);
+
         // if (track_desc_->is_active_) {
         //     return false;
         // }
